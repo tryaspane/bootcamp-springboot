@@ -1,57 +1,50 @@
 package com.example.demo.controller;
 
+import com.example.demo.common.dto.user.UpdateUserRequest;
+import com.example.demo.interfaces.IUserService;
 import com.example.demo.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
 public class UserController {
+    @Autowired
+    private IUserService iUserService;
 
-    private final Map<String, User> db = new HashMap<>();// String -> key dengan type data String dari class User
-
-    @GetMapping(value = "/get", produces = "application/json")
+    @GetMapping(value = "", produces = "application/json")
     public ResponseEntity<List<User>> getUser(){
-        List<User> result = new ArrayList<User>();
-        result.addAll(db.values());
-        return ResponseEntity.ok(result);//class untuk return response dari Rest itu seperti apa
+        List<User> result = iUserService.getUsers();
+        return ResponseEntity.ok(result);
     }
 
-    @GetMapping(value = "/get/{nimUser}", produces = "application/json")
+    @GetMapping(value = "/{nimUser}", produces = "application/json")
     public ResponseEntity<User> getDetailUser(@PathVariable String nimUser){
-        User result = db.get(nimUser);
-        return ResponseEntity.ok(result);//class untuk return response dari Rest itu seperti apa
+        User result = iUserService.getUser(nimUser);
+        return ResponseEntity.ok(result);
     }
 
-    @PostMapping(value = "/create", produces = "application/json")
-    public ResponseEntity<String> createUser(@RequestBody User request){
-        db.put(request.getNimUser(),request);
-        return ResponseEntity.ok("Create User");
+    @PostMapping(value = "", produces = "application/json")
+    public ResponseEntity<User> createUser(@RequestBody User request){
+        User result = iUserService.createUser(request);
+        return ResponseEntity.ok(result);
     }
 
-    @PostMapping(value = "/delete/{nimUser}", produces = "application/json")
+    @DeleteMapping(value = "/{nimUser}", produces = "application/json")
     public ResponseEntity<String> deleteUser(@PathVariable String nimUser){
-        db.remove(nimUser);
-        return ResponseEntity.ok("Delete User");
+        Boolean result = iUserService.deleteUser(nimUser);
+        if(!result) return ResponseEntity.ok("Data Not Found");
+
+        return  ResponseEntity.ok("Result");
     }
 
-    @PostMapping(value = "/update/{nimUser}", produces = "application/json")
-    public ResponseEntity<String> updateUser(@PathVariable String nimUser, @RequestBody User request){
-        Boolean isExist = db.containsKey(nimUser);
-         if(!isExist){
-             return ResponseEntity.ok("Data Not Found");
-         }
-         User currentData = db.get(nimUser);
-         currentData.setNamaUser(request.getNamaUser());
-         currentData.setProdiUser(request.getProdiUser());
-
-         db.put(currentData.getNimUser(), currentData);
-        return ResponseEntity.ok("Data Updated");
+    @PutMapping(value = "/{nimUser}", produces = "application/json")
+    public ResponseEntity<User> updateUser(@PathVariable String nimUser, @RequestBody UpdateUserRequest request){
+        User result = iUserService.updateUser(nimUser, request);
+        return ResponseEntity.ok(result);
     }
 
 }
